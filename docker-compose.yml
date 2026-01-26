@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"  # Map host port 5000 to container port 5000
+    volumes:
+      - .:/app       # Mount current directory to /app for live reloading
+      - /app/__pycache__ # Prevent pycache conflicts
+    environment:
+      - FLASK_ENV=development
+ 

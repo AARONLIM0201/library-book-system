@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="card">
+    <h1>Dashboard</h1>
+    <p>Welcome to the Library Book Tracking System.</p>
+
+    <div
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 2rem;">
+        <div class="card" style="background: #e0e7ff; color: #3730a3;">
+            <h3>Books</h3>
+            <p>Manage the book catalog, add new books, and check availability.</p>
+            <a href="/books" class="btn">Go to Books</a>
+        </div>
+
+        <div class="card" style="background: #d1fae5; color: #065f46;">
+            <h3>Borrowers</h3>
+            <p>Manage library members and view their history.</p>
+            <a href="/borrowers" class="btn">Go to Borrowers</a>
+        </div>
+
+        <div class="card" style="background: #fee2e2; color: #991b1b;">
+            <h3>Audit Log</h3>
+            <p>Track all system activities and ensure accountability.</p>
+            <a href="/audit" class="btn">View Logs</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

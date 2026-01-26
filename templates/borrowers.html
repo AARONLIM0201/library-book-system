@@ -1,0 +1,141 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1>Borrowers</h1>
+        <button onclick="showModal('addBorrowerModal')" class="btn">Add Borrower</button>
+    </div>
+
+    <table id="borrowersTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Joined</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Populated by JS -->
+        </tbody>
+    </table>
+</div>
+
+<div class="card" style="margin-top: 2rem;">
+    <h2>Active Transactions (Return Books)</h2>
+    <table id="transactionsTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Book</th>
+                <th>Borrower</th>
+                <th>Date Borrowed</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Populated by JS -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Add Borrower Modal -->
+<div id="addBorrowerModal" class="modal">
+    <div class="modal-content">
+        <h2>Register Borrower</h2>
+        <form id="addBorrowerForm">
+            <label>Name</label>
+            <input type="text" name="name" required>
+
+            <label>Email</label>
+            <input type="email" name="email" required>
+
+            <div class="actions" style="margin-top: 1rem;">
+                <button type="submit" class="btn">Save</button>
+                <button type="button" onclick="closeModal('addBorrowerModal')" class="btn btn-secondary">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        loadBorrowers();
+        loadTransactions();
+    });
+
+    async function loadBorrowers() {
+        const borrowers = await fetchData('/api/borrowers');
+        const tbody = document.querySelector('#borrowersTable tbody');
+        tbody.innerHTML = '';
+
+        borrowers.forEach(b => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${b.borrower_id}</td>
+                <td>${b.name}</td>
+                <td>${b.email}</td>
+                <td>${new Date(b.membership_date).toLocaleDateString()}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function loadTransactions() {
+        const transactions = await fetchData('/api/transactions');
+        const tbody = document.querySelector('#transactionsTable tbody');
+        tbody.innerHTML = '';
+
+        // Filter for active transactions (no return date)
+        const active = transactions.filter(t => !t.return_date);
+
+        if (active.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No active loans</td></tr>';
+            return;
+        }
+
+        active.forEach(t => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${t.transaction_id}</td>
+                <td>${t.book_title}</td>
+                <td>${t.borrower_name}</td>
+                <td>${new Date(t.borrow_date).toLocaleDateString()}</td>
+                <td>
+                    <button onclick="returnBook(${t.book_id}, ${t.borrower_id})" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">Return</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    document.getElementById('addBorrowerForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const storedData = new FormData(e.target);
+        const data = Object.fromEntries(storedData.entries());
+
+        try {
+            await postData('/api/borrowers', data);
+            closeModal('addBorrowerModal');
+            e.target.reset();
+            loadBorrowers();
+        } catch (err) {
+            alert(err.message);
+        }
+    };
+
+    async function returnBook(bookId, borrowerId) {
+        if (!confirm('Return this book?')) return;
+        try {
+            await postData('/api/return', { book_id: bookId, borrower_id: borrowerId });
+            loadTransactions(); // Refresh list to remove returned item
+            // Optionally refresh borrowers if we showed status there
+        } catch (err) {
+            alert(err.message);
+        }
+    }
+</script>
+{% endblock %}

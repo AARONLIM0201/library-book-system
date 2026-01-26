@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="card">
+    <h1>Audit Log</h1>
+    <p>System activities and security events.</p>
+
+    <table id="auditTable">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>User</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Populated by JS -->
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        loadAuditLogs();
+    });
+
+    async function loadAuditLogs() {
+        const logs = await fetchData('/api/audit');
+        const tbody = document.querySelector('#auditTable tbody');
+        tbody.innerHTML = '';
+
+        logs.forEach(log => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${new Date(log.timestamp).toLocaleString()}</td>
+                <td><span style="font-weight: 500;">${log.user}</span></td>
+                <td>${log.action}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+</script>
+{% endblock %}
