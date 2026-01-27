@@ -9,7 +9,7 @@ resource "aws_lb" "main" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
-  subnets            = [aws_subnet.public.id, aws_subnet.private.id] # ALB needs 2 subnets usually
+  subnets            = [aws_subnet.public.id, aws_subnet.public_2.id] # ALB needs 2 subnets in different AZs
 }
 
 resource "aws_lb_target_group" "app" {
@@ -42,11 +42,12 @@ resource "aws_ecs_task_definition" "app" {
   requires_compatibilities = ["FARGATE"]
   cpu                      = "256"
   memory                   = "512"
+  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
 
   container_definitions = jsonencode([
     {
       name  = "library-app"
-      image = "library-app:latest" # Replace with ECR URL in real deployment
+      image = "${aws_ecr_repository.app_repo.repository_url}:latest"
       portMappings = [
         {
           containerPort = 5000
@@ -59,6 +60,14 @@ resource "aws_ecs_task_definition" "app" {
           value = "postgresql://${var.db_username}:${var.db_password}@${aws_db_instance.default.endpoint}/librarydb"
         }
       ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = "/ecs/${var.project_name}"
+          awslogs-region        = var.aws_region
+          awslogs-stream-prefix = "ecs"
+        }
+      }
     }
   ])
 }

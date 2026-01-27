@@ -18,3 +18,8 @@ venv/
 # OS
 Thumbs.db
 .DS_Store
+
+# Binaries & Sensitive
+*.exe
+*.zip
+Windows PowerShell.txt

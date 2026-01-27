@@ -27,6 +27,23 @@ Testing: Logout... OK
 ```
 Status: **PASSED** ✅
 
+## Security Validation
+We performed a security audit on the deployed AWS infrastructure.
+
+### 1. Port Scanning
+We verified that only essential ports are open to the internet via the ALB.
+- **Port 80 (HTTP)**: OPEN (Required for web access)
+- **Port 443 (HTTPS)**: CLOSED (Not configured)
+- **Port 22 (SSH)**: CLOSED/FILTERED (Secure)
+- **Port 5432 (DB)**: CLOSED/FILTERED (Secure - Private Subnet Only)
+
+### 2. WAF Testing
+We tested the Web Application Firewall (WAF) against common attacks.
+- **Normal Request**: `200 OK` (Allowed)
+- **XSS Attack Simulation**: `403 Forbidden` (Blocked by AWS WAF)
+
+**Result:** The infrastructure meets the "Secure Implementation" requirements.
+
 ## Database Architecture
 We chose **SQLite** with **SQLAlchemy** for this implementation.
 

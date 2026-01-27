@@ -24,7 +24,7 @@ variable "db_password" {
 variable "create_nat_gateway" {
   description = "Enable NAT Gateway? (COSTS MONEY: ~$0.045/hr). Required for private subnet internet access."
   type        = bool
-  default     = false # Default to FREE mode
+  default     = true # Default to FREE mode
 }
 
 variable "enable_multi_az" {
